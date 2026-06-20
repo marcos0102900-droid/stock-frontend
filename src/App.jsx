@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Import from './pages/Import';
@@ -6,21 +6,45 @@ import Import from './pages/Import';
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   
-  // Estado global de productos compartido
-  const [products, setProducts] = useState([
-    { id: 1, name: 'Caja de Cartón Reforzada', sku: 'BOX-001', stock: 45, price: 2.50 },
-    { id: 2, name: 'Cinta Embalar Transparente', sku: 'TAP-002', stock: 3, price: 1.20 },
-    { id: 3, name: 'Plástico de Burbujas (Rollo)', sku: 'BUB-003', stock: 18, price: 15.00 }
-  ]);
+  // El estado inicial ahora arranca vacío, a la espera de lo que envíe el servidor
+  const [products, setProducts] = useState([]);
+
+  // 📡 EFECTO PRINCIPAL: Pide los productos al backend al cargar la app
+  useEffect(() => {
+    fetch('/api/products')
+      .then((res) => {
+        if (!res.ok) throw new Error('Error al conectar con el servidor');
+        return res.json();
+      })
+      .then((data) => setProducts(data))
+      .catch((err) => console.error('Error cargando productos:', err));
+  }, []);
+
+  // Función para guardar un nuevo producto directamente en el servidor
+  const handleSaveProductOnServer = (newProductData) => {
+    fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newProductData),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Error al guardar el producto');
+        return res.json();
+      })
+      .then((savedProduct) => {
+        // Si el servidor lo guarda bien, lo inyectamos en nuestra pantalla al instante
+        setProducts((prevProducts) => [...prevProducts, savedProduct]);
+      })
+      .catch((err) => console.error('Error al guardar:', err));
+  };
 
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        // Le pasamos los productos al Dashboard para calcular las estadísticas reales
         return <Dashboard products={products} />;
       case 'products':
-        // Le pasamos los productos y la función para actualizarlos a la pestaña de Inventario
-        return <Products products={products} setProducts={setProducts} />;
+        // Le pasamos la nueva función de guardado en servidor a la pestaña de inventario
+        return <Products products={products} onAddProduct={handleSaveProductOnServer} setProducts={setProducts} />;
       case 'import':
         return <Import />;
       default:

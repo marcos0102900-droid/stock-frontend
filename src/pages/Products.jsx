@@ -1,28 +1,31 @@
 import React, { useState } from 'react';
 
-export default function Products() {
-  const [products, setProducts] = useState([
-    { id: 1, name: 'Caja de Cartón Reforzada', sku: 'BOX-001', stock: 45, price: 2.50 },
-    { id: 2, name: 'Cinta Embalar Transparente', sku: 'TAP-002', stock: 3, price: 1.20 }, // Alerta stock bajo
-    { id: 3, name: 'Plástico de Burbujas (Rollo)', sku: 'BUB-003', stock: 18, price: 15.00 }
-  ]);
-
+// Ahora el componente recibe "onAddProduct" (la función que conecta con el servidor)
+export default function Products({ products, onAddProduct, setProducts }) {
   const [formData, setFormData] = useState({ name: '', sku: '', stock: '', price: '' });
 
   const handleAddProduct = (e) => {
     e.preventDefault();
     if (!formData.name || !formData.sku) return;
     
-    const newProd = {
-      id: Date.now(),
+    // Preparamos el paquete de datos puros
+    const newProdData = {
       name: formData.name,
       sku: formData.sku,
       stock: parseInt(formData.stock) || 0,
       price: parseFloat(formData.price) || 0
     };
 
-    setProducts([...products, newProd]);
+    // 🚀 Mandamos el paquete al servidor a través de la función del padre
+    onAddProduct(newProdData);
+    
+    // Limpiamos las cajas de texto del formulario
     setFormData({ name: '', sku: '', stock: '', price: '' });
+  };
+
+  const handleDeleteProduct = (id) => {
+    const filteredProducts = products.filter(prod => prod.id !== id);
+    setProducts(filteredProducts);
   };
 
   return (
@@ -32,7 +35,6 @@ export default function Products() {
         <p className="text-gray-500 text-sm">Controla, añade y supervisa tus productos existentes.</p>
       </div>
 
-      {/* Formulario Rápido */}
       <form onSubmit={handleAddProduct} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
         <div>
           <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Nombre</label>
@@ -55,7 +57,6 @@ export default function Products() {
         </button>
       </form>
 
-      {/* Tabla de Resultados */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -65,6 +66,7 @@ export default function Products() {
               <th className="p-4">Existencias</th>
               <th className="p-4">Precio Unitario</th>
               <th className="p-4">Estado</th>
+              <th className="p-4 text-center">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 text-sm text-slate-600">
@@ -80,6 +82,14 @@ export default function Products() {
                   ) : (
                     <span className="bg-green-50 text-green-600 px-2.5 py-0.5 rounded-full text-xs font-medium border border-green-100">Óptimo</span>
                   )}
+                </td>
+                <td className="p-4 text-center">
+                  <button 
+                    onClick={() => handleDeleteProduct(prod.id)}
+                    className="text-red-500 hover:text-red-700 font-medium text-xs bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded transition"
+                  >
+                    Eliminar
+                  </button>
                 </td>
               </tr>
             ))}
