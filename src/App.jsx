@@ -5,11 +5,9 @@ import Import from './pages/Import';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  
-  // El estado inicial ahora arranca vacío, a la espera de lo que envíe el servidor
   const [products, setProducts] = useState([]);
 
-  // 📡 EFECTO PRINCIPAL: Pide los productos al backend al cargar la app
+  // 📡 Pide los productos al backend al cargar la app
   useEffect(() => {
     fetch('/api/products')
       .then((res) => {
@@ -20,7 +18,7 @@ export default function App() {
       .catch((err) => console.error('Error cargando productos:', err));
   }, []);
 
-  // Función para guardar un nuevo producto directamente en el servidor
+  // Función para guardar un nuevo producto en el servidor
   const handleSaveProductOnServer = (newProductData) => {
     fetch('/api/products', {
       method: 'POST',
@@ -32,10 +30,21 @@ export default function App() {
         return res.json();
       })
       .then((savedProduct) => {
-        // Si el servidor lo guarda bien, lo inyectamos en nuestra pantalla al instante
         setProducts((prevProducts) => [...prevProducts, savedProduct]);
       })
       .catch((err) => console.error('Error al guardar:', err));
+  };
+
+  // 🔴 Función para borrar un producto de la base de datos
+  const handleDeleteProductOnServer = (id) => {
+    fetch(`/api/products/${id}`, {
+      method: 'DELETE',
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Error al eliminar el producto');
+        setProducts((prevProducts) => prevProducts.filter((prod) => prod.id !== id));
+      })
+      .catch((err) => console.error('Error al eliminar:', err));
   };
 
   const renderContent = () => {
@@ -43,8 +52,13 @@ export default function App() {
       case 'dashboard':
         return <Dashboard products={products} />;
       case 'products':
-        // Le pasamos la nueva función de guardado en servidor a la pestaña de inventario
-        return <Products products={products} onAddProduct={handleSaveProductOnServer} setProducts={setProducts} />;
+        return (
+          <Products 
+            products={products} 
+            onAddProduct={handleSaveProductOnServer} 
+            onDeleteProduct={handleDeleteProductOnServer} 
+          />
+        );
       case 'import':
         return <Import />;
       default:

@@ -1,37 +1,34 @@
 import React from 'react';
 
 export default function Dashboard({ products = [] }) {
-  
-  // 📊 CALCULADORA DE ESTADÍSTICAS REALES
-  const stats = React.useMemo(() => {
-    // 1. Total de productos distintos en el sistema
-    const totalProducts = products.length;
-
-    // 2. Valor financiero total (Suma de: stock * precio de cada artículo)
-    const totalValue = products.reduce((acc, prod) => acc + (prod.stock * prod.price), 0);
-
-    // 3. Cuántos artículos tienen un stock menor o igual a 5 unidades
-    const lowStockCount = products.filter(prod => prod.stock <= 5).length;
-
-    return { totalProducts, totalValue, lowStockCount };
-  }, [products]);
+  // 📊 CALCULADORA DE ESTADÍSTICAS EN TIEMPO REAL
+  const stats = {
+    totalProducts: products.length,
+    
+    // Sumamos el valor de todo el inventario (Stock × Precio de cada producto)
+    totalValue: products.reduce((acc, prod) => acc + (prod.stock * prod.price), 0),
+    
+    // Contamos cuántos productos tienen existencias bajas (menor o igual a 5)
+    lowStockCount: products.filter(prod => prod.stock <= 5).length
+  };
 
   return (
-    <div>
-      <div className="mb-6">
+    <div className="space-y-6">
+      <div>
         <h1 className="text-2xl font-bold text-slate-800">📊 Panel General</h1>
-        <p className="text-gray-500 text-sm">Estado actual de tu inventario calculado en tiempo real.</p>
+        <p className="text-gray-500 text-sm">Resumen global del estado de tu inventario en tiempo real.</p>
       </div>
 
-      {/* Tarjetas de Estadísticas Conectadas */}
+      {/* Grid de Tarjetas de Indicadores */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {/* Total Productos */}
+        
+        {/* Tarjeta 1: Total de Artículos */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="text-sm font-medium text-gray-400 uppercase tracking-wider">Total Productos</div>
+          <div className="text-sm font-medium text-gray-400 uppercase tracking-wider">Productos Registrados</div>
           <div className="text-3xl font-bold text-slate-700 mt-2">{stats.totalProducts}</div>
         </div>
 
-        {/* Valor de Inventario */}
+        {/* Tarjeta 2: Valor del Inventario */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="text-sm font-medium text-gray-400 uppercase tracking-wider">Valor del Inventario</div>
           <div className="text-3xl font-bold text-slate-700 mt-2">
@@ -39,15 +36,17 @@ export default function Dashboard({ products = [] }) {
           </div>
         </div>
 
-        {/* Alertas de Stock Bajo */}
-        <div className={`p-6 rounded-xl shadow-sm border transition ${
-          stats.lowStockCount > 0 
-            ? 'bg-red-50/50 border-red-100 text-red-900' 
-            : 'bg-white border-gray-100'
-        }`}>
-          <div className="text-sm font-medium text-gray-400 uppercase tracking-wider">Alertas de Stock Bajo</div>
-          <div className={`text-3xl font-bold mt-2 ${stats.lowStockCount > 0 ? 'text-red-600' : 'text-slate-700'}`}>
-            {stats.lowStockCount}
+        {/* Tarjeta 3: Alertas de Stock Bajo */}
+        <div className="p-6 rounded-xl shadow-sm border transition duration-300 Conectado">
+          <div className={`p-6 rounded-xl shadow-sm border transition ${
+            stats.lowStockCount > 0
+              ? 'bg-red-50/50 border-red-100 text-red-900'
+              : 'bg-white border-gray-100'
+          }`}>
+            <div className="text-sm font-medium text-gray-400 uppercase tracking-wider">Alertas de Stock Bajo</div>
+            <div className={`text-3xl font-bold mt-2 ${stats.lowStockCount > 0 ? 'text-red-600' : 'text-slate-700'}`}>
+              {stats.lowStockCount}
+            </div>
           </div>
         </div>
       </div>
@@ -55,7 +54,7 @@ export default function Dashboard({ products = [] }) {
       {/* Contenedor de Actividad Reciente */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <h3 className="text-lg font-bold text-slate-800 mb-4">Últimos movimientos</h3>
-        <p className="text-sm text-gray-400">Aquí aparecerán las últimas entradas y salidas automáticamente cuando conectemos el servidor.</p>
+        <p className="text-sm text-gray-400">Aquí aparecerán las últimas entradas y salidas automáticamente cuando conectemos el historial.</p>
       </div>
     </div>
   );

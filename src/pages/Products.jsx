@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 
-// Ahora el componente recibe "onAddProduct" (la función que conecta con el servidor)
-export default function Products({ products, onAddProduct, setProducts }) {
+export default function Products({ products, onAddProduct, onDeleteProduct }) {
   const [formData, setFormData] = useState({ name: '', sku: '', stock: '', price: '' });
 
   const handleAddProduct = (e) => {
     e.preventDefault();
     if (!formData.name || !formData.sku) return;
     
-    // Preparamos el paquete de datos puros
     const newProdData = {
       name: formData.name,
       sku: formData.sku,
@@ -16,16 +14,12 @@ export default function Products({ products, onAddProduct, setProducts }) {
       price: parseFloat(formData.price) || 0
     };
 
-    // 🚀 Mandamos el paquete al servidor a través de la función del padre
     onAddProduct(newProdData);
-    
-    // Limpiamos las cajas de texto del formulario
     setFormData({ name: '', sku: '', stock: '', price: '' });
   };
 
   const handleDeleteProduct = (id) => {
-    const filteredProducts = products.filter(prod => prod.id !== id);
-    setProducts(filteredProducts);
+    onDeleteProduct(id);
   };
 
   return (
